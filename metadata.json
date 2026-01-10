@@ -1,0 +1,7 @@
+{
+  "name": "DriveSafeMate - DeepDrive",
+  "description": "A premium Australian driving school booking and learning platform featuring dedicated portals for Students, Instructors, and Admins, powered by Gemini for personalized learning paths.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
