@@ -50,6 +50,15 @@ export interface AdminStats {
   bookingsThisMonth: number;
 }
 
+export interface Review {
+  id: string;
+  instructorId: string;
+  studentName: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface Instructor {
   id: string;
   userId: string;

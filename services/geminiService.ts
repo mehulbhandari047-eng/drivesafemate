@@ -4,6 +4,35 @@ import { GoogleGenAI, Type } from "@google/genai";
 // Always initialize with process.env.API_KEY directly per guidelines
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+export const analyzeSystemHealth = async (logs: any[]) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `You are the DriveSafeMate System Analyst. Analyze the following system logs and provide a brief, professional health summary (max 3 sentences). 
+      Identify any potential bottlenecks or successes in the Supabase, Gemini, or Payment services.
+      
+      LOGS:
+      ${JSON.stringify(logs.slice(0, 10))}
+      
+      Format your response as a JSON object with a 'summary' string and a 'status' string (Healthy, Warning, or Critical).`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            summary: { type: Type.STRING },
+            status: { type: Type.STRING, enum: ["Healthy", "Warning", "Critical"] }
+          }
+        }
+      }
+    });
+    return response.text ? JSON.parse(response.text) : null;
+  } catch (error) {
+    console.error("Gemini Analysis Error:", error);
+    return null;
+  }
+};
+
 export const generateLearningPath = async (studentDetails: {
   state: string,
   hoursLogged: number,
@@ -39,7 +68,6 @@ export const generateLearningPath = async (studentDetails: {
       }
     });
 
-    // Access text property directly (it's a getter, not a method)
     return response.text ? JSON.parse(response.text).path : null;
   } catch (error) {
     console.error("Error generating learning path:", error);
@@ -75,7 +103,6 @@ export const getLicenceGuidance = async (state: string, currentStage: string) =>
         }
       }
     });
-    // Access text property directly (it's a getter, not a method)
     return response.text ? JSON.parse(response.text).steps : null;
   } catch (error) {
     console.error("Error fetching licence guidance:", error);

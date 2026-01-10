@@ -31,17 +31,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
-        .animate-fadeInRight { animation: fadeInRight 0.8s ease-out forwards; }
-        .animate-scaleIn { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-slideInRight { animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-bounce-slow { animation: bounce 4s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(0); } }
+        .animate-bounce-slow { animation: bounce 4s infinite; }
+
+        /* Custom Car Cursor for interactive elements */
+        a, button, [role="button"], select, label, .cursor-pointer, input[type="submit"], input[type="button"], input[type="checkbox"], input[type="radio"] {
+            cursor: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 512 512'%3e%3cpath fill='%23fbbf24' d='M499.99 313.33l-34.18-102.5c-15.34-46.03-58.85-77.5-107.51-77.5h-204.6c-48.66 0-92.17 31.47-107.51 77.5l-34.18 102.5c-15.42 46.26 19.34 93.34 68.16 93.34h31.83v17.33c0 23.1 18.73 41.83 41.83 41.83s41.83-18.73 41.83-41.83v-17.33h136.66v17.33c0 23.1 18.73 41.83 41.83 41.83s41.83-18.73 41.83-41.83v-17.33h31.83c48.82.01 83.58-47.07 68.16-93.34z'/%3e%3c/svg%3e") 16 16, pointer !important;
+        }
+
+        /* Hide scrollbars for a cleaner look while maintaining functionality */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 
 <script type="importmap">
@@ -50,7 +52,9 @@
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.35.0"
+    "framer-motion": "https://esm.sh/framer-motion@^11.11.11",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.7"
   }
 }
 </script>
