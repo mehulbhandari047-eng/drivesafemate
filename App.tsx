@@ -10,6 +10,7 @@ import ServicesPage from './components/ServicesPage';
 import ContactPage from './components/ContactPage';
 import MetaSEO from './components/MetaSEO';
 import Auth from './components/Auth';
+import SafetyAssistant from './components/SafetyAssistant';
 import InstructorOnboarding from './components/InstructorOnboarding';
 import { dbService } from './services/databaseService';
 
@@ -64,7 +65,6 @@ const App: React.FC = () => {
 
   const handleOnboardingComplete = (instructor: Instructor) => {
     setIsOnboarding(false);
-    // Refresh user or state if needed
   };
 
   const handleNavigate = (view: PageView) => {
@@ -81,6 +81,9 @@ const App: React.FC = () => {
     <div className="transition-colors duration-300">
       <MetaSEO view={currentView} />
       
+      {/* Global Safety AI Assistant */}
+      <SafetyAssistant />
+
       {showAuth && (
         <Auth 
           mode={authMode} 

@@ -25,6 +25,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ role, user }) => {
   const [isGeneratingPath, setIsGeneratingPath] = useState(false);
   
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
 
@@ -149,6 +150,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ role, user }) => {
           modules={learningModules} 
           onGeneratePath={handleGenerateAIPath}
           isGenerating={isGeneratingPath}
+          onShowHistory={() => setShowHistoryModal(true)}
         />
       )}
 
@@ -168,6 +170,72 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ role, user }) => {
                   <button onClick={() => setShowCancelModal(false)} className="py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-2xl">Keep It</button>
                   <button onClick={confirmCancellation} className="py-4 bg-red-600 text-white font-black rounded-2xl">Confirm Cancel</button>
                 </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* History Modal */}
+      <AnimatePresence>
+        {showHistoryModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-md">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: 30 }} 
+              className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl p-10 flex flex-col max-h-[85vh] border dark:border-slate-800"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">Booking History</h2>
+                  <p className="text-sm text-slate-500">A complete log of your past and cancelled sessions.</p>
+                </div>
+                <button onClick={() => setShowHistoryModal(false)} className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto space-y-4 pr-2 scrollbar-hide">
+                {bookings.filter(b => b.status === 'COMPLETED' || b.status === 'CANCELLED').length > 0 ? (
+                  bookings.filter(b => b.status === 'COMPLETED' || b.status === 'CANCELLED').map((b) => (
+                    <div key={b.id} className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border dark:border-slate-700 flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg ${
+                          b.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
+                        }`}>
+                          <i className={`fas ${b.status === 'COMPLETED' ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
+                        </div>
+                        <div>
+                          <p className="font-bold dark:text-white">{b.instructorName}</p>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{b.dateTime}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${
+                          b.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
+                        }`}>
+                          {b.status}
+                        </span>
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">${b.price}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/20 rounded-3xl border-2 border-dashed dark:border-slate-800">
+                    <i className="fas fa-history text-4xl text-slate-300 mb-4"></i>
+                    <p className="text-slate-500 italic">No past sessions to display yet.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 pt-6 border-t dark:border-slate-800 text-center">
+                 <button 
+                   onClick={() => setShowHistoryModal(false)}
+                   className="px-8 py-3 bg-slate-900 dark:bg-amber-400 text-amber-400 dark:text-slate-900 rounded-xl font-bold transition-all"
+                 >
+                   Close History
+                 </button>
+              </div>
             </motion.div>
           </div>
         )}
@@ -381,7 +449,7 @@ const InstructorContent = ({ bookings }: { bookings: Booking[] }) => {
            <h2 className="text-4xl font-black mb-1">${earnings + 1450}.00</h2>
            <p className="text-slate-400 text-sm mb-6 font-medium">For the current billing cycle</p>
            <button className="w-full py-3 bg-white text-slate-900 rounded-xl font-black text-sm hover:bg-slate-100 transition-colors">Request Payout</button>
-           <i className="fas fa-wallet absolute -bottom-10 -right-10 text-[10rem] opacity-5 -rotate-12"></i>
+           <i className="fas fa-wallet absolute -bottom-10 -right-10 text-[12rem] opacity-5 -rotate-12"></i>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 p-8 shadow-sm">
            <h3 className="text-lg font-black dark:text-white mb-4">Upcoming Student Sessions</h3>
@@ -401,7 +469,7 @@ const InstructorContent = ({ bookings }: { bookings: Booking[] }) => {
   );
 };
 
-const StudentContent = ({ bookings, onCancel, modules, onGeneratePath, isGenerating }: any) => {
+const StudentContent = ({ bookings, onCancel, modules, onGeneratePath, isGenerating, onShowHistory }: any) => {
   const upcoming = bookings.filter((b: Booking) => b.status === 'CONFIRMED' || b.status === 'PENDING');
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -420,7 +488,15 @@ const StudentContent = ({ bookings, onCancel, modules, onGeneratePath, isGenerat
       </div>
       <div className="lg:col-span-4 space-y-6">
         <div className="bg-white dark:bg-slate-900 rounded-3xl border dark:border-slate-800 p-8 shadow-sm">
-          <h3 className="font-bold text-lg dark:text-white mb-6">Upcoming Sessions</h3>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-lg dark:text-white">Upcoming Sessions</h3>
+            <button 
+              onClick={onShowHistory}
+              className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest hover:underline"
+            >
+              History
+            </button>
+          </div>
           <div className="space-y-4">
             {upcoming.length > 0 ? upcoming.map((b: Booking) => (
               <div key={b.id} className="p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border dark:border-slate-700 relative group">
@@ -429,7 +505,20 @@ const StudentContent = ({ bookings, onCancel, modules, onGeneratePath, isGenerat
                 <p className="text-xs text-slate-500 mb-4">{b.location}</p>
                 <button onClick={() => onCancel(b)} className="w-full py-2 border-2 border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-500 hover:border-red-500 hover:text-red-500 transition-all">Request Cancel</button>
               </div>
-            )) : ( <div className="text-center py-10 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl"> <p className="text-slate-400 text-sm italic font-medium">No bookings found.</p> </div> )}
+            )) : ( 
+              <div className="text-center py-10 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl"> 
+                <p className="text-slate-400 text-sm italic font-medium">No bookings found.</p> 
+              </div> 
+            )}
+            {upcoming.length > 0 && (
+              <button 
+                onClick={onShowHistory}
+                className="w-full py-3 mt-4 text-xs font-black text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                <i className="fas fa-history mr-2"></i>
+                View Full History
+              </button>
+            )}
           </div>
         </div>
       </div>
