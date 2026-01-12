@@ -10,7 +10,8 @@ export enum PageView {
   ABOUT = 'ABOUT',
   SERVICES = 'SERVICES',
   CONTACT = 'CONTACT',
-  DASHBOARD = 'DASHBOARD'
+  DASHBOARD = 'DASHBOARD',
+  EXPLORE = 'EXPLORE'
 }
 
 export enum TrainingType {
@@ -78,9 +79,6 @@ export interface Instructor {
   isVerified: boolean;
 }
 
-/**
- * Interface representing an email notification sent by the system
- */
 export interface EmailNotification {
   id: string;
   to: string;
@@ -90,9 +88,6 @@ export interface EmailNotification {
   type: 'CONFIRMATION' | 'CANCELLATION' | 'REMINDER';
 }
 
-/**
- * Interface representing a slot in the instructor's calendar
- */
 export interface AvailabilitySlot {
   day: string;
   time: string;

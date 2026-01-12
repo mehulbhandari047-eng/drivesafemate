@@ -28,7 +28,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onClose, initialMode = 'LOGI
       if (mode === 'LOGIN') {
         const user = await dbService.login(email, password);
         if (user) onAuthSuccess(user);
-        else setError("Invalid credentials. Try our mock logins!");
+        else setError("Invalid credentials. Try our quick access demos!");
       } else {
         const newUser = await dbService.registerUser({ name, email, password, role });
         onAuthSuccess(newUser);
@@ -38,6 +38,15 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onClose, initialMode = 'LOGI
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleQuickAccess = async (targetRole: UserRole) => {
+    setIsLoading(true);
+    const demoUser = dbService.getMockUserByRole(targetRole);
+    // Simulate a bit of loading for realism
+    await new Promise(r => setTimeout(r, 800));
+    onAuthSuccess(demoUser);
+    setIsLoading(false);
   };
 
   return (
@@ -67,6 +76,39 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onClose, initialMode = 'LOGI
             <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
               {mode === 'LOGIN' ? "Continue your road to independence." : "Australia's premium driver network awaits."}
             </p>
+          </div>
+
+          {/* Quick Access Section for Testing */}
+          <div className="mb-8 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800">
+             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-4">Quick Access Demos</p>
+             <div className="grid grid-cols-3 gap-3">
+                <button 
+                  onClick={() => handleQuickAccess(UserRole.STUDENT)}
+                  className="flex flex-col items-center p-3 rounded-2xl hover:bg-white dark:hover:bg-slate-700 transition-all border border-transparent hover:border-slate-200 shadow-sm group"
+                >
+                   <i className="fas fa-user-graduate text-blue-500 mb-1 group-hover:scale-110 transition-transform"></i>
+                   <span className="text-[9px] font-black uppercase">Student</span>
+                </button>
+                <button 
+                  onClick={() => handleQuickAccess(UserRole.INSTRUCTOR)}
+                  className="flex flex-col items-center p-3 rounded-2xl hover:bg-white dark:hover:bg-slate-700 transition-all border border-transparent hover:border-slate-200 shadow-sm group"
+                >
+                   <i className="fas fa-id-card text-emerald-500 mb-1 group-hover:scale-110 transition-transform"></i>
+                   <span className="text-[9px] font-black uppercase">Coach</span>
+                </button>
+                <button 
+                  onClick={() => handleQuickAccess(UserRole.ADMIN)}
+                  className="flex flex-col items-center p-3 rounded-2xl hover:bg-white dark:hover:bg-slate-700 transition-all border border-transparent hover:border-slate-200 shadow-sm group"
+                >
+                   <i className="fas fa-shield-halved text-amber-500 mb-1 group-hover:scale-110 transition-transform"></i>
+                   <span className="text-[9px] font-black uppercase">Admin</span>
+                </button>
+             </div>
+          </div>
+
+          <div className="relative mb-8">
+             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100 dark:border-slate-800"></div></div>
+             <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-slate-900 px-4 text-slate-400 font-bold">Or use credentials</span></div>
           </div>
 
           {error && (

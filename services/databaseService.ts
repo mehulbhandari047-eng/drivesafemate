@@ -15,9 +15,37 @@ export interface SystemLog {
 class DatabaseService {
   private logs: SystemLog[] = [];
   private logListeners: ((logs: SystemLog[]) => void)[] = [];
+  private connectionStatus: 'CONNECTED' | 'DISCONNECTED' | 'DEGRADED' = 'CONNECTED';
 
   constructor() {
     this.seedData();
+    this.checkConnectivity();
+  }
+
+  async checkConnectivity() {
+    try {
+      const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+      // If we get a "relation does not exist" error, it actually means we ARE connected to Supabase, 
+      // but the table hasn't been created yet. That's a 'SUCCESS' for connectivity.
+      if (error && error.message.includes('FetchError')) {
+        this.connectionStatus = 'DISCONNECTED';
+      } else {
+        this.connectionStatus = 'CONNECTED';
+      }
+    } catch (e) {
+      this.connectionStatus = 'DISCONNECTED';
+    }
+    this.addLog({ 
+      service: 'SUPABASE', 
+      action: 'HEARTBEAT_CHECK', 
+      status: this.connectionStatus === 'CONNECTED' ? 'SUCCESS' : 'ERROR',
+      details: `Supabase status: ${this.connectionStatus}` 
+    });
+    return this.connectionStatus;
+  }
+
+  getConnectionStatus() {
+    return this.connectionStatus;
   }
 
   private async delay(ms: number = 500) {
