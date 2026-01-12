@@ -57,6 +57,14 @@ const App: React.FC = () => {
     }
   };
 
+  const handleQuickStart = (role: UserRole) => {
+    const demoUser = dbService.getMockUserByRole(role);
+    setCurrentUser(demoUser);
+    setIsLoggedIn(true);
+    setCurrentView(PageView.DASHBOARD);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleNavigate = (view: PageView) => {
     setCurrentView(view);
     setSelectedInstructorForBooking(null);
@@ -140,6 +148,7 @@ const App: React.FC = () => {
                       onGetStarted={() => { setAuthMode('SIGNUP'); setShowAuth(true); }} 
                       onLogin={() => { setAuthMode('LOGIN'); setShowAuth(true); }} 
                       onNavigate={handleNavigate}
+                      onQuickStart={handleQuickStart}
                       currentView={currentView}
                       isDarkMode={isDarkMode}
                       onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}

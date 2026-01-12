@@ -1,18 +1,19 @@
 
 import React, { useState } from 'react';
-import { PageView } from '../types';
+import { PageView, UserRole } from '../types';
 import { motion } from 'framer-motion';
 
 interface LandingPageProps {
   onGetStarted: () => void;
   onLogin: () => void;
   onNavigate: (view: PageView) => void;
+  onQuickStart: (role: UserRole) => void;
   currentView: PageView;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onNavigate, currentView }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onNavigate, onQuickStart, currentView }) => {
   const [searchLocation, setSearchLocation] = useState('');
   
   if (currentView !== PageView.HOME) return null;
@@ -68,6 +69,37 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onNavi
         </div>
       </section>
 
+      {/* Quick Access Dashboard Portals */}
+      <section className="py-24 px-8 md:px-20 max-w-8xl mx-auto border-b border-slate-100 dark:border-slate-800">
+        <div className="text-center mb-16">
+           <h2 className="text-3xl font-black dark:text-white tracking-tight">Instant Dashboard Access</h2>
+           <p className="text-slate-500 font-medium mt-2">One-click entry into any role to see the platform in action.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+           <QuickPortalCard 
+             title="Student Portal" 
+             desc="View your AI learning roadmap and logbook hours." 
+             icon="fa-user-graduate" 
+             color="bg-blue-500"
+             onClick={() => onQuickStart(UserRole.STUDENT)}
+           />
+           <QuickPortalCard 
+             title="Instructor Portal" 
+             desc="Manage bookings, payouts, and your student calendar." 
+             icon="fa-id-card" 
+             color="bg-emerald-500"
+             onClick={() => onQuickStart(UserRole.INSTRUCTOR)}
+           />
+           <QuickPortalCard 
+             title="Admin Control" 
+             desc="Monitor system health, revenue, and verification queue." 
+             icon="fa-shield-halved" 
+             color="bg-amber-500"
+             onClick={() => onQuickStart(UserRole.ADMIN)}
+           />
+        </div>
+      </section>
+
       {/* Discovery Collections */}
       <section className="py-24 px-8 md:px-20 max-w-8xl mx-auto space-y-16">
          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -75,7 +107,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onNavi
               <h2 className="text-4xl font-black tracking-tight dark:text-white">Curated by Road Experts</h2>
               <p className="text-slate-500 text-lg mt-2">Unique training experiences for every stage of your journey.</p>
            </div>
-           <button onClick={() => onNavigate(PageView.EXPLORE)} className="text-sm font-bold underline decoration-2 underline-offset-4">Explore all 450+ Coaches</button>
+           <button onClick={() => onNavigate(PageView.EXPLORE)} className="text-sm font-bold underline decoration-2 underline-offset-4 dark:text-white">Explore all 450+ Coaches</button>
          </div>
          
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -132,19 +164,28 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted, onLogin, onNavi
           </div>
         </div>
       </section>
-
-      {/* Global Academy Stats */}
-      <section className="py-24 px-8 md:px-20 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
-           <div><p className="text-5xl font-black mb-2 dark:text-white">450+</p><p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Coaches</p></div>
-           <div><p className="text-5xl font-black mb-2 dark:text-white">85k</p><p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Students</p></div>
-           <div><p className="text-5xl font-black mb-2 dark:text-white">99%</p><p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Pass Rate</p></div>
-           <div><p className="text-5xl font-black mb-2 dark:text-white">24/7</p><p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Support</p></div>
-        </div>
-      </section>
     </div>
   );
 };
+
+const QuickPortalCard = ({ title, desc, icon, color, onClick }: any) => (
+  <motion.button 
+    whileHover={{ y: -5, scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={onClick}
+    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-[2.5rem] text-left shadow-sm hover:shadow-xl transition-all group w-full"
+  >
+    <div className={`w-14 h-14 ${color} text-white rounded-2xl flex items-center justify-center text-xl mb-6 shadow-lg shadow-inherit/20`}>
+       <i className={`fas ${icon}`}></i>
+    </div>
+    <h3 className="text-xl font-black dark:text-white mb-2">{title}</h3>
+    <p className="text-sm text-slate-500 font-medium leading-relaxed">{desc}</p>
+    <div className="mt-8 flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-brand-600 dark:text-brand-400">
+       <span>Open Dashboard</span>
+       <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+    </div>
+  </motion.button>
+);
 
 const ExperienceCard = ({ img, title, subtitle, price }: any) => (
   <div className="group cursor-pointer">
@@ -157,8 +198,8 @@ const ExperienceCard = ({ img, title, subtitle, price }: any) => (
         <p className="text-slate-500 font-medium">{subtitle}</p>
         <p className="text-slate-900 dark:text-white font-black mt-2">{price} <span className="font-medium text-slate-400">/ experience</span></p>
       </div>
-      <div className="flex items-center space-x-1 font-bold text-sm">
-        <i className="fas fa-star text-[10px]"></i>
+      <div className="flex items-center space-x-1 font-bold text-sm dark:text-white">
+        <i className="fas fa-star text-[10px] text-amber-400"></i>
         <span>5.0</span>
       </div>
     </div>

@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { UserRole, Booking, User } from '../types';
 import { dbService, SystemLog } from '../services/databaseService';
-import { diagnosticService, TestResult } from '../services/diagnosticService';
+import { diagnosticService } from '../services/diagnosticService';
 import BookingSystem from '../components/BookingSystem';
 import TrainingHub from '../components/TrainingHub';
 import InstructorCalendar from '../components/InstructorCalendar';
 import LicenceGuide from '../components/LicenceGuide';
+import SystemAuditRunner from '../components/SystemAuditRunner';
 import { generateLearningPath } from '../services/geminiService';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,8 +23,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ role, user }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [learningModules, setLearningModules] = useState<any[]>([]);
   const [isGeneratingPath, setIsGeneratingPath] = useState(false);
-  
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showAudit, setShowAudit] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -75,14 +75,27 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ role, user }) => {
 
   return (
     <div className="pt-10 pb-32 px-8 md:px-20 max-w-8xl mx-auto space-y-16 animate-slideUp">
+      {showAudit && <SystemAuditRunner onClose={() => setShowAudit(false)} />}
+      
       {/* Page Title */}
-      <div>
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
-          {role === UserRole.STUDENT ? "Your Lessons" : role === UserRole.INSTRUCTOR ? "Coach Central" : "Mission Control"}
-        </h1>
-        <p className="text-slate-500 font-medium text-lg mt-2">
-          {role === UserRole.STUDENT ? "Manage your road trips and learning progress." : "Your scheduling and earnings dashboard."}
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
+            {role === UserRole.STUDENT ? "Your Lessons" : role === UserRole.INSTRUCTOR ? "Coach Central" : "Mission Control"}
+          </h1>
+          <p className="text-slate-500 font-medium text-lg mt-2">
+            {role === UserRole.STUDENT ? "Manage your road trips and learning progress." : "Your scheduling and earnings dashboard."}
+          </p>
+        </div>
+        {role === UserRole.ADMIN && (
+          <button 
+            onClick={() => setShowAudit(true)}
+            className="px-8 py-4 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-2xl font-black flex items-center space-x-3 shadow-xl hover:scale-105 active:scale-95 transition-all"
+          >
+            <i className="fas fa-stethoscope"></i>
+            <span>System Pulse Test</span>
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -99,7 +112,6 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ role, user }) => {
           modules={learningModules} 
           onGeneratePath={handleGenerateAIPath}
           isGenerating={isGeneratingPath}
-          onShowHistory={() => setShowHistoryModal(true)}
           onBookNew={() => setCurrentView('BOOKING')}
         />
       )}
@@ -109,12 +121,10 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ role, user }) => {
 
 const StudentView = ({ bookings, modules, onGeneratePath, isGenerating, onBookNew }: any) => {
   const upcoming = bookings.filter((b: Booking) => b.status === 'CONFIRMED' || b.status === 'PENDING');
-  const past = bookings.filter((b: Booking) => b.status === 'COMPLETED');
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
       <div className="lg:col-span-8 space-y-16">
-        {/* Upcoming Trips (Airbnb Style) */}
         <div>
            <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-black dark:text-white">Upcoming Experiences</h2>
@@ -149,7 +159,6 @@ const StudentView = ({ bookings, modules, onGeneratePath, isGenerating, onBookNe
            </div>
         </div>
 
-        {/* AI Learning Roadmap */}
         <div className="bg-slate-50 dark:bg-slate-900 rounded-[3rem] p-12 border dark:border-slate-800 shadow-sm">
            <div className="flex items-center justify-between mb-10">
               <h2 className="text-2xl font-black dark:text-white">Your AI Learning Path</h2>
@@ -161,7 +170,6 @@ const StudentView = ({ bookings, modules, onGeneratePath, isGenerating, onBookNe
         </div>
       </div>
 
-      {/* Sidebar: Logbook and Progress */}
       <div className="lg:col-span-4 space-y-10">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] p-10 shadow-premium sticky top-24">
            <h2 className="text-2xl font-black mb-4 dark:text-white tracking-tight">Trip Stats</h2>
@@ -177,21 +185,12 @@ const StudentView = ({ bookings, modules, onGeneratePath, isGenerating, onBookNe
               <button className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black shadow-lg">View Full Logbook</button>
            </div>
         </div>
-
-        <div className="bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
-           <h3 className="text-xl font-black mb-4 relative z-10">The Safety Hub</h3>
-           <p className="text-slate-400 text-sm leading-relaxed mb-8 relative z-10">Access emergency protocols and state road rules instantly.</p>
-           <button className="px-6 py-3 border border-slate-700 rounded-xl font-bold text-sm hover:bg-white hover:text-slate-900 transition-all relative z-10">Open Support</button>
-           <i className="fas fa-shield-halved absolute -bottom-10 -right-10 text-[10rem] opacity-5 -rotate-12"></i>
-        </div>
       </div>
     </div>
   );
 };
 
 const AdminView = ({ stats }: { stats: any }) => {
-  const [testResults, setTestResults] = useState<TestResult[]>([]);
-  const [isTesting, setIsTesting] = useState(false);
   const [dbStatus, setDbStatus] = useState<'CONNECTED' | 'DISCONNECTED' | 'DEGRADED'>('CONNECTED');
 
   useEffect(() => {
@@ -201,13 +200,6 @@ const AdminView = ({ stats }: { stats: any }) => {
     };
     check();
   }, []);
-
-  const runTests = async () => {
-    setIsTesting(true);
-    const results = await diagnosticService.runFullSuite();
-    setTestResults(results);
-    setIsTesting(false);
-  };
 
   return (
     <div className="space-y-16 animate-slideUp">
@@ -222,25 +214,30 @@ const AdminView = ({ stats }: { stats: any }) => {
         <InsightCard label="Health Score" value="99%" icon="fa-heart-pulse" />
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-12 shadow-sm">
-        <div className="flex items-center justify-between mb-12">
-           <h2 className="text-3xl font-black tracking-tighter dark:text-white">System Verification</h2>
-           <button onClick={runTests} disabled={isTesting} className="px-8 py-4 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-2xl font-black flex items-center space-x-3 shadow-xl">
-             {isTesting ? <i className="fas fa-spinner animate-spin"></i> : <i className="fas fa-vial"></i>}
-             <span>{isTesting ? 'Verifying...' : 'Run Stress Test'}</span>
-           </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-           {testResults.map((r, i) => (
-             <div key={i} className="p-6 border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center space-x-5">
-                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${r.status === 'PASS' ? 'text-emerald-500' : 'text-rose-500'}`}><i className={`fas ${r.status === 'PASS' ? 'fa-check' : 'fa-times'}`}></i></div>
-                   <div><p className="font-black text-lg dark:text-white">{r.name}</p><p className="text-[10px] text-slate-400 uppercase tracking-[0.2em]">{r.category}</p></div>
-                </div>
-                <span className="text-xs font-black text-slate-400">{r.latency}ms</span>
-             </div>
-           ))}
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+         <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-12 shadow-sm">
+            <h2 className="text-2xl font-black mb-6 dark:text-white">Verification Queue</h2>
+            <div className="space-y-4">
+               {[1,2,3].map(i => (
+                 <div key={i} className="flex items-center justify-between p-4 border border-slate-50 dark:border-slate-800 rounded-2xl">
+                    <div className="flex items-center space-x-4">
+                       <div className="w-10 h-10 rounded-full bg-slate-100"></div>
+                       <div><p className="font-bold text-sm dark:text-white">Instructor Applicant #{i}</p><p className="text-xs text-slate-500">VIC Authority Checked</p></div>
+                    </div>
+                    <button className="text-xs font-black text-brand-600">Review</button>
+                 </div>
+               ))}
+            </div>
+         </div>
+         <div className="bg-slate-900 rounded-[3rem] p-12 text-white shadow-2xl overflow-hidden relative">
+            <h2 className="text-2xl font-black mb-4 relative z-10">Platform Growth</h2>
+            <p className="text-slate-400 text-sm mb-8 relative z-10">User acquisition is up 12% compared to last month. Gemini optimization reduced support tickets by 30%.</p>
+            <div className="flex gap-4 relative z-10">
+               <div className="px-4 py-2 bg-white/10 rounded-lg text-xs font-bold">+128 Students</div>
+               <div className="px-4 py-2 bg-white/10 rounded-lg text-xs font-bold">+12 Coaches</div>
+            </div>
+            <i className="fas fa-chart-line absolute -bottom-10 -right-10 text-[10rem] opacity-5 -rotate-12"></i>
+         </div>
       </div>
     </div>
   );
